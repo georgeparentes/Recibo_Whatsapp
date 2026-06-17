@@ -153,12 +153,16 @@ function enviarTextoEvolutionAPI($celular, $mensagem, $ip, $porta, $instanceName
     global $logFile;
     $apiURL = "http://{$ip}:{$porta}/message/sendText/{$instanceName}";
     
+    // Formato Evolution API v1.x
     $data = json_encode([
         "number" => $celular,
+        "options" => [
+            "delay" => 1200,
+            "presence" => "composing"
+        ],
         "textMessage" => [
             "text" => $mensagem
-        ],
-        "options" => ["delay" => 200]
+        ]
     ]);
     
     $ch = curl_init();
@@ -177,31 +181,7 @@ function enviarTextoEvolutionAPI($celular, $mensagem, $ip, $porta, $instanceName
     curl_close($ch);
     
     if ($httpCode !== 200 && $httpCode !== 201) {
-        // Tenta formato alternativo
-        $data2 = json_encode([
-            "number" => $celular,
-            "text" => $mensagem,
-            "options" => ["delay" => 200]
-        ]);
-        
-        $ch2 = curl_init();
-        curl_setopt_array($ch2, [
-            CURLOPT_URL => $apiURL,
-            CURLOPT_POST => true,
-            CURLOPT_HTTPHEADER => ["apikey: $token", "Content-Type: application/json"],
-            CURLOPT_POSTFIELDS => $data2,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 15,
-            CURLOPT_CONNECTTIMEOUT => 5
-        ]);
-        
-        $response = curl_exec($ch2);
-        $httpCode = curl_getinfo($ch2, CURLINFO_HTTP_CODE);
-        curl_close($ch2);
-    }
-    
-    if ($httpCode !== 200 && $httpCode !== 201) {
-        file_put_contents($logFile, "[" . date('d/m/Y H:i:s') . "] ⚠️ Texto não enviado HTTP $httpCode: " . substr($response, 0, 200) . "\n", FILE_APPEND);
+        file_put_contents($logFile, "[" . date('d/m/Y H:i:s') . "] ⚠️ Texto não enviado HTTP $httpCode: " . substr($response, 0, 300) . "\n", FILE_APPEND);
     }
     
     return ($httpCode === 200 || $httpCode === 201);

@@ -218,6 +218,26 @@ if ($stmt) {
 }
 ?>
 
+<!-- Toast de notificação -->
+<?php if (isset($_GET['msg'])): ?>
+<?php
+    $toast_msg = $_GET['msg'];
+    $toast_nome = isset($_GET['nome']) ? htmlspecialchars($_GET['nome']) : '';
+    $toast_ok = ($toast_msg === 'texto_ok');
+?>
+<div id="toast-notify" style="position:fixed;top:20px;right:20px;z-index:9999;animation:slideIn .3s ease;">
+    <div style="background:white;border:1px solid <?= $toast_ok ? '#bbf7d0' : '#fecaca' ?>;border-radius:10px;padding:16px 24px;box-shadow:0 4px 16px rgba(0,0,0,0.12);display:flex;align-items:center;gap:10px;">
+        <span style="font-size:22px;"><?= $toast_ok ? '✅' : '❌' ?></span>
+        <div>
+            <div style="color:<?= $toast_ok ? '#16a34a' : '#dc2626' ?>;font-size:13px;font-weight:600;"><?= $toast_ok ? 'Texto enviado!' : 'Erro ao enviar' ?></div>
+            <div style="color:#64748b;font-size:11px;"><?= $toast_ok ? $toast_nome : 'Verifique o log.' ?></div>
+        </div>
+    </div>
+</div>
+<style>@keyframes slideIn{from{transform:translateX(100%);opacity:0;}to{transform:translateX(0);opacity:1;}}</style>
+<script>setTimeout(function(){ var t=document.getElementById('toast-notify'); if(t) t.style.display='none'; }, 7000);</script>
+<?php endif; ?>
+
 <!-- Busca + Filtro ativo -->
 <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px;">
     <form method="GET" class="rwp-search" style="margin-bottom:0;">
@@ -298,13 +318,22 @@ if ($stmt) {
                 <?php endif; ?>
             </td>
             <td>
-                <form method="post" action="envio_manual.php" style="margin:0;">
-                    <input type="hidden" name="id" value="<?= $id ?>">
-                    <input type="hidden" name="login" value="<?= htmlspecialchars($login) ?>">
-                    <button type="submit" class="rwp-btn rwp-btn-primary rwp-btn-sm" onclick="return confirm('Enviar PDF manualmente?')">
-                        <i class="fa fa-paper-plane"></i> Enviar
-                    </button>
-                </form>
+                <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;">
+                    <form method="post" action="envio_manual.php" style="margin:0;">
+                        <input type="hidden" name="id" value="<?= $id ?>">
+                        <input type="hidden" name="login" value="<?= htmlspecialchars($login) ?>">
+                        <button type="submit" class="rwp-btn rwp-btn-primary rwp-btn-sm" onclick="return confirm('Enviar PDF manualmente?')" title="Enviar PDF">
+                            <i class="fa fa-file-pdf-o"></i> PDF
+                        </button>
+                    </form>
+                    <form method="post" action="envio_manual_texto.php" style="margin:0;">
+                        <input type="hidden" name="id" value="<?= $id ?>">
+                        <input type="hidden" name="login" value="<?= htmlspecialchars($login) ?>">
+                        <button type="submit" class="rwp-btn rwp-btn-success rwp-btn-sm" onclick="return confirm('Enviar mensagem de texto manualmente?')" title="Enviar somente texto">
+                            <i class="fa fa-comment"></i> Texto
+                        </button>
+                    </form>
+                </div>
             </td>
         </tr>
 <?php
